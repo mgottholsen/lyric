@@ -9,7 +9,7 @@ import socket
 import asyncio
 import voluptuous as vol
 import homeassistant.helpers.config_validation as cv
-from homeassistant.helpers import discovery
+from homeassistant.helpers import discovery, network
 from homeassistant.const import (CONF_SCAN_INTERVAL, HTTP_BAD_REQUEST, HTTP_OK)
 from homeassistant.components.http import HomeAssistantView
 
@@ -122,8 +122,12 @@ def setup(hass, config):
     cache_ttl = conf[CONF_SCAN_INTERVAL]
     filename = LYRIC_CONFIG_FILE
     token_cache_file = hass.config.path(filename)
-    redirect_uri = conf.get(CONF_REDIRECT_URI, hass.config.api.base_url +
-                            '/api/lyric/authenticate')
+    try:
+        redirect_uri = f'{network.get_url(hass, allow_internal=False, allow_ip=False, require_ssl=True, require_standard_port=True)}/api/lyric/authenticate'
+    except Exception as e:
+        _LOGGER.error(f"Error occured with network.get_url: Error: {e}")
+        redirect_uri = 'https://ha.yaduhome.com/api/lyric/authenticate'
+    _LOGGER.warn(redirect_uri)
 
     lyric = lyric.Lyric(
         token_cache_file=token_cache_file,
@@ -195,8 +199,7 @@ class LyricAuthenticateView(HomeAssistantView):
     @asyncio.coroutine
     def get(self, request):
         """Handle a GET request."""
-        hass = request.app['hass']
-        data = request.GET
+        data = request.query
 
         if 'code' not in data or 'state' not in data:
             return self.json_message('Authentication failed, not the right '

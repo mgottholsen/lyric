@@ -1,12 +1,15 @@
 {
   "domain": "lyric",
   "name": "Honeywell Lyric",
-  "documentation": "https://github.com/bramkragten/lyric",
-  "requirements": [
-    "python-lyric==1.1.4"
+  "documentation": "https://github.com/shellster/lyric",
+  "dependencies": [
+      "configurator",
+      "http"
   ],
-  "dependencies": ["http", "configurator"],
+  "requirements": [
+      "python-lyric"
+  ],
   "codeowners": [
-    "@bramkragten"
+    "@shellster"
   ]
 }
